@@ -15,6 +15,7 @@
 
     <!-- About -->
     <string name="about_title">About me</string>
+    <string name="about_trusted_by">Trusted by</string>
     <string name="about_strengths">What I bring</string>
     <string name="about_education">Education</string>
     <string name="about_languages">Languages</string>

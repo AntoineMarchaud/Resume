@@ -102,7 +102,8 @@ Everything displayed comes from [`app/src/main/res/raw/resume_template.json`](ap
       "description": "One sentence about the position", // optional
       "highlights": ["What you did"],
       "technologies": ["Kotlin", "Jetpack Compose"],
-      "appId": "com.acme.app"                          // optional, opens Google Play
+      "appId": "com.acme.app",                         // optional, opens Google Play
+      "logo": "logos/acme.png"                         // optional, company logo in assets/logos
     }
   ],
   "skills": ["Kotlin", "Jetpack Compose"],
@@ -171,3 +172,4 @@ The project builds with **zero warnings**: Kotlin compiler, Gradle (`--warning-m
 - Font: [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans), SIL Open Font License 1.1
 - Icons: [Material Symbols](https://fonts.google.com/icons), Apache License 2.0
 - Brand icons: [Simple Icons](https://simpleicons.org), CC0 1.0
+- Company logos: [Wikimedia Commons](https://commons.wikimedia.org) and [Wikipedia](https://fr.wikipedia.org), public domain or CC0, except Vantiva (© Vantiva, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)) and EBP (registered trademark). All logos are trademarks of their respective owners.

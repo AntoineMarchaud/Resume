@@ -22,38 +22,17 @@
 
 ## Screenshots
 
-### Phone
-
 <p align="center">
-  <img src="screenshots/phone_about.png" width="24%" alt="About"/>
-  <img src="screenshots/phone_experience.png" width="24%" alt="Experience timeline"/>
-  <img src="screenshots/phone_skills.png" width="24%" alt="Skills"/>
-  <img src="screenshots/phone_contact.png" width="24%" alt="Contact"/>
-</p>
-
-### Dark theme
-
-<p align="center">
-  <img src="screenshots/phone_dark_about.png" width="24%" alt="About, dark theme"/>
-  <img src="screenshots/phone_dark_experience.png" width="24%" alt="Experience, dark theme"/>
-</p>
-
-### Tablet
-
-<p align="center">
-  <img src="screenshots/tablet_landscape.png" width="100%" alt="Tablet, landscape: two-pane layout"/>
+  <img src="screenshots/phone_about.png" width="30%" alt="About, with the client logos"/>
+  <img src="screenshots/phone_experience.png" width="30%" alt="Experience timeline"/>
+  <img src="screenshots/phone_dark_skills.png" width="30%" alt="Skills, dark theme"/>
 </p>
 <p align="center">
-  <img src="screenshots/tablet_landscape_dark.png" width="64%" alt="Tablet, landscape, dark theme"/>
-  <img src="screenshots/tablet_portrait.png" width="25%" alt="Tablet, portrait: navigation rail"/>
+  <img src="screenshots/tablet_landscape.png" width="58%" alt="Tablet, landscape: two panes"/>
+  <img src="screenshots/foldable_tabletop.png" width="38%" alt="Foldable in tabletop posture: profile above the hinge, content below"/>
+  <br/>
+  <sub>Tablet: two panes · Foldable in tabletop posture: profile above the hinge, content below</sub>
 </p>
-
-### Foldable
-
-| Unfolded | Book posture | Tabletop posture |
-|:---:|:---:|:---:|
-| <img src="screenshots/foldable_unfolded.png" alt="Foldable, unfolded"/> | <img src="screenshots/foldable_book.png" alt="Foldable, book posture"/> | <img src="screenshots/foldable_tabletop.png" alt="Foldable, tabletop posture"/> |
-| Profile pane and content side by side | The pane ends exactly at the hinge | Profile above the hinge, content below |
 
 ## Features
 
@@ -67,12 +46,13 @@
   | Foldable in book posture | Two panes split exactly at the hinge |
   | Foldable in tabletop posture | Profile above the hinge, content and navigation below |
 
-- **Four sections**: About (summary, strengths, education, languages), Experience (timeline), Skills (tags and usage chart), Contact.
+- **Four sections**: About (client logos, summary, strengths, education, languages), Experience (timeline), Skills (tags and usage chart), Contact.
 - **Data-driven**: positions durations, the "Current" badge, technology usage and company monograms are computed from the JSON.
 - **Polished design system**: custom indigo palette for light and dark themes, Plus Jakarta Sans typography, hairline cards, gradient hero.
 - **Material You**: optional wallpaper-based colors on Android 12+, toggled from the header.
 - **Motion**: collapsing header, staggered entrance animations, expandable cards, animated charts, section transitions.
 - **Edge to edge**: fully transparent status and navigation bars, with icons that stay readable.
+- **Selectable text**, to copy a client, a keyword or the email address into an email or an applicant tracking system.
 - **Accessibility**: tabs, headings and toggle semantics, content descriptions, layouts that adapt to large font scales.
 - **Compose previews** for every section and for every adaptive mode (phone, tablet, foldable postures, light and dark).
 

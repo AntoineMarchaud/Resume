@@ -320,9 +320,11 @@ fun CollapsingProfileHeader(
     // Natural height of the expanded part, measured below; the estimate avoids a jump on first frame.
     var expandedHeightPx by remember { mutableIntStateOf(with(density) { 196.dp.roundToPx() }) }
 
+    // Read during composition, not in the effect: a new measured height then recomposes and updates
+    // the collapse limit, even when nothing else recomposes (e.g. back to portrait after a rotation).
+    val heightOffsetLimit = -expandedHeightPx.toFloat()
     SideEffect {
-        val limit = -expandedHeightPx.toFloat()
-        if (state.heightOffsetLimit != limit) state.heightOffsetLimit = limit
+        if (state.heightOffsetLimit != heightOffsetLimit) state.heightOffsetLimit = heightOffsetLimit
     }
 
     Box(

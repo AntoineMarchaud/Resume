@@ -58,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.amarchaud.templateresume.R
 import com.amarchaud.templateresume.data.ResumeModel
 import com.amarchaud.templateresume.data.StatModel
@@ -211,6 +212,9 @@ private fun CollapsingLayout(
     }
 }
 
+/** Maximum width of the two-pane layout. */
+private val TwoPaneMaxWidth = 1280.dp
+
 @Composable
 private fun TwoPaneLayout(
     resume: ResumeModel,
@@ -223,9 +227,16 @@ private fun TwoPaneLayout(
 ) {
     val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val width = paneWidth ?: (maxWidth * 0.36f).coerceIn(320.dp, 420.dp)
-        Row(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        // A hinge imposes where the panes split; otherwise, on very wide windows (desktop browsers,
+        // large monitors), the layout is capped and centered like a website.
+        val layoutWidth = if (paneWidth == null) min(maxWidth, TwoPaneMaxWidth) else maxWidth
+        val width = paneWidth ?: (layoutWidth * 0.36f).coerceIn(320.dp, 420.dp)
+        Row(
+            modifier = Modifier
+                .width(layoutWidth)
+                .fillMaxHeight(),
+        ) {
             ProfilePane(
                 info = resume.info,
                 stats = stats,

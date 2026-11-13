@@ -32,8 +32,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.amarchaud.templateresume.R
+import com.amarchaud.templateresume.data.CareerSplit
+import com.amarchaud.templateresume.data.ExperienceModel
 import com.amarchaud.templateresume.data.ResumeModel
 import com.amarchaud.templateresume.data.TechnologyUsage
+import com.amarchaud.templateresume.data.careerSplit
 import com.amarchaud.templateresume.data.technologyUsage
 import com.amarchaud.templateresume.ui.components.CountPill
 import com.amarchaud.templateresume.ui.components.GroupTitle
@@ -42,6 +45,7 @@ import com.amarchaud.templateresume.ui.components.Reveal
 import com.amarchaud.templateresume.ui.components.SectionHeader
 import com.amarchaud.templateresume.ui.components.SectionList
 import com.amarchaud.templateresume.ui.components.SkillChip
+import com.amarchaud.templateresume.ui.components.TechChip
 import com.amarchaud.templateresume.ui.components.rememberRevealState
 import com.amarchaud.templateresume.ui.preview.PreviewData
 import com.amarchaud.templateresume.ui.theme.TemplateResumeTheme
@@ -56,8 +60,9 @@ fun SkillsSection(
     modifier: Modifier = Modifier,
 ) {
     val revealState = rememberRevealState()
-    val usage = remember(resume) { resume.technologyUsage().take(MAX_USAGE_ROWS) }
-    val positions = resume.experiences.size
+    val split = remember(resume) { resume.careerSplit() }
+    val usage = remember(split) { split.focusPositions.technologyUsage().take(MAX_USAGE_ROWS) }
+    val positions = split.focusPositions.size
 
     SectionList(contentPadding = contentPadding, modifier = modifier) {
         item(key = "header") {
@@ -86,12 +91,86 @@ fun SkillsSection(
                     GroupTitle(text = stringResource(R.string.skills_usage_title))
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = stringResource(R.string.skills_usage_subtitle),
+                        text = usageSubtitle(split),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     UsageCard(usage = usage, totalPositions = positions)
+                }
+            }
+        }
+        if (split.otherPositions.isNotEmpty()) {
+            item(key = "other-positions") {
+                Column(modifier = Modifier.padding(top = 36.dp)) {
+                    GroupTitle(text = otherPositionsTitle(split))
+                    Spacer(modifier = Modifier.height(14.dp))
+                    OtherPositionsCard(positions = split.otherPositions)
+                }
+            }
+        }
+    }
+}
+
+/** `Across my 8 Android positions, since 2014`, or the generic subtitle without focus. */
+@Composable
+private fun usageSubtitle(split: CareerSplit): String {
+    val focus = split.focus
+    val year = split.focusSinceYear
+    return if (focus != null && year != null) {
+        pluralStringResource(
+            R.plurals.skills_usage_focus_subtitle,
+            split.focusPositions.size,
+            split.focusPositions.size,
+            focus,
+            year,
+        )
+    } else {
+        stringResource(R.string.skills_usage_subtitle)
+    }
+}
+
+/** `Before Android · 2007 – 2014`. */
+@Composable
+private fun otherPositionsTitle(split: CareerSplit): String {
+    val focus = split.focus
+    val title = if (focus != null && split.othersAreEarlier) {
+        stringResource(R.string.skills_earlier_title, focus)
+    } else {
+        stringResource(R.string.skills_other_title)
+    }
+    val years = split.otherYears?.let { if (it.first == it.last) "${it.first}" else "${it.first} – ${it.last}" }
+    return if (years == null) title else "$title · $years"
+}
+
+/** The positions outside the focus career: one sentence, then their other technologies. */
+@Composable
+private fun OtherPositionsCard(positions: List<ExperienceModel>) {
+    val usage = remember(positions) { positions.technologyUsage() }
+    val main = usage.firstOrNull()
+    ResumeCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = if (main == null) {
+                    pluralStringResource(R.plurals.positions_count, positions.size, positions.size)
+                } else {
+                    pluralStringResource(
+                        if (main.positions == positions.size) R.plurals.skills_other_summary_all else R.plurals.skills_other_summary_mostly,
+                        positions.size,
+                        positions.size,
+                        main.name,
+                    )
+                },
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (usage.size > 1) {
+                Spacer(modifier = Modifier.height(12.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    usage.drop(1).forEach { TechChip(text = it.name) }
                 }
             }
         }

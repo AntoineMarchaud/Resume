@@ -46,6 +46,20 @@
     <string name="skills_subtitle">Technologies and practices I work with</string>
     <string name="skills_usage_title">Most used in production</string>
     <string name="skills_usage_subtitle">Share of positions where each technology was used</string>
+    <plurals name="skills_usage_focus_subtitle">
+        <item quantity="one">Across my %1$d %2$s position, since %3$d</item>
+        <item quantity="other">Across my %1$d %2$s positions, since %3$d</item>
+    </plurals>
+    <string name="skills_earlier_title">Before %1$s</string>
+    <string name="skills_other_title">Other positions</string>
+    <plurals name="skills_other_summary_all">
+        <item quantity="one">%1$d position in %2$s</item>
+        <item quantity="other">%1$d positions in %2$s</item>
+    </plurals>
+    <plurals name="skills_other_summary_mostly">
+        <item quantity="one">%1$d position, mostly %2$s</item>
+        <item quantity="other">%1$d positions, mostly %2$s</item>
+    </plurals>
 
     <!-- Contact -->
     <string name="contact_title">Contact</string>

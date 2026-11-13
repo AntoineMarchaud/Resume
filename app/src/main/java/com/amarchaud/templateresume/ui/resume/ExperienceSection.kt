@@ -1,6 +1,5 @@
 package com.amarchaud.templateresume.ui.resume
 
-import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -35,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -50,10 +48,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +64,7 @@ import com.amarchaud.templateresume.data.formattedPeriod
 import com.amarchaud.templateresume.data.initialsOf
 import com.amarchaud.templateresume.data.isCurrent
 import com.amarchaud.templateresume.data.splitDuration
+import com.amarchaud.templateresume.ui.components.BundledImage
 import com.amarchaud.templateresume.ui.components.CountPill
 import com.amarchaud.templateresume.ui.components.CurrentBadge
 import com.amarchaud.templateresume.ui.components.MetaItem
@@ -77,14 +74,13 @@ import com.amarchaud.templateresume.ui.components.Reveal
 import com.amarchaud.templateresume.ui.components.SectionHeader
 import com.amarchaud.templateresume.ui.components.SectionList
 import com.amarchaud.templateresume.ui.components.TechChip
+import com.amarchaud.templateresume.ui.components.rememberBundledImage
 import com.amarchaud.templateresume.ui.components.rememberRevealState
 import com.amarchaud.templateresume.ui.components.staggerDelay
 import com.amarchaud.templateresume.ui.icons.AppIcons
 import com.amarchaud.templateresume.ui.preview.PreviewData
 import com.amarchaud.templateresume.ui.theme.ResumeTheme
 import com.amarchaud.templateresume.ui.theme.TemplateResumeTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.YearMonth
 
 private const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id="
@@ -290,17 +286,11 @@ private fun ExperienceCard(
 /** Company logo when the resume provides one, its initials otherwise. */
 @Composable
 private fun CompanyLogo(experience: ExperienceModel, index: Int) {
-    when (val logo = rememberCompanyLogo(experience.logo)) {
-        is LogoState.Loaded -> LogoTile(image = logo.image)
-        LogoState.Loading -> LogoTile(image = null)
-        LogoState.Missing -> CompanyMonogram(experience = experience, index = index)
+    when (val logo = rememberBundledImage(experience.logo)) {
+        is BundledImage.Loaded -> LogoTile(image = logo.image)
+        BundledImage.Loading -> LogoTile(image = null)
+        BundledImage.Missing -> CompanyMonogram(experience = experience, index = index)
     }
-}
-
-private sealed interface LogoState {
-    data object Loading : LogoState
-    data class Loaded(val image: ImageBitmap) : LogoState
-    data object Missing : LogoState
 }
 
 private val LogoTileHeight = 44.dp
@@ -335,24 +325,6 @@ private fun LogoTile(image: ImageBitmap?) {
             Image(bitmap = image, contentDescription = null, contentScale = ContentScale.Fit)
         }
     }
-}
-
-/** Decodes a logo bundled in the app assets, off the main thread. */
-@Composable
-private fun rememberCompanyLogo(path: String?): LogoState {
-    val assets = LocalContext.current.assets
-    val state by produceState<LogoState>(
-        initialValue = if (path == null) LogoState.Missing else LogoState.Loading,
-        path,
-        assets,
-    ) {
-        if (path != null) {
-            value = withContext(Dispatchers.IO) {
-                runCatching { assets.open(path).use { BitmapFactory.decodeStream(it) } }.getOrNull()
-            }?.let { LogoState.Loaded(it.asImageBitmap()) } ?: LogoState.Missing
-        }
-    }
-    return state
 }
 
 @Composable

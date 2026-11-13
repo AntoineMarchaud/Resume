@@ -29,6 +29,9 @@ class ResumeParserTest {
             if (experience.end != null) assertNotNull(experience.endMonth, "${experience.company} has an invalid end")
         }
         assertEquals(1, resume.experiences.count { it.isCurrent }, "Exactly one position should be ongoing")
+        resume.info.photo?.let { photo ->
+            assertTrue(SystemFileSystem.exists(Path("src/main/assets/$photo")), "Missing photo: $photo")
+        }
         resume.experiences.mapNotNull { it.logo }.forEach { logo ->
             assertTrue(SystemFileSystem.exists(Path("src/main/assets/$logo")), "Missing logo: $logo")
         }

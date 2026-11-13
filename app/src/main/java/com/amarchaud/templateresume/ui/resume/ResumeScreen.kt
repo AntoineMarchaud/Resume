@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,6 +63,8 @@ import androidx.compose.ui.unit.min
 import com.amarchaud.templateresume.R
 import com.amarchaud.templateresume.data.ResumeModel
 import com.amarchaud.templateresume.data.StatModel
+import com.amarchaud.templateresume.ui.components.LocalProfilePhoto
+import com.amarchaud.templateresume.ui.components.rememberBundledImage
 
 @Composable
 fun ResumeScreen(
@@ -94,40 +97,42 @@ internal fun ResumeScreen(
         darkTheme = darkTheme,
     )
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        when (layout) {
-            ResumeLayout.Compact, ResumeLayout.Medium -> CollapsingLayout(
-                resume = resume,
-                stats = stats,
-                section = section,
-                onSectionSelected = { section = it },
-                dynamicColor = dynamicColor,
-                useRail = layout == ResumeLayout.Medium,
-            )
+    CompositionLocalProvider(LocalProfilePhoto provides rememberBundledImage(resume.info.photo)) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            when (layout) {
+                ResumeLayout.Compact, ResumeLayout.Medium -> CollapsingLayout(
+                    resume = resume,
+                    stats = stats,
+                    section = section,
+                    onSectionSelected = { section = it },
+                    dynamicColor = dynamicColor,
+                    useRail = layout == ResumeLayout.Medium,
+                )
 
-            is ResumeLayout.TwoPane -> TwoPaneLayout(
-                resume = resume,
-                stats = stats,
-                section = section,
-                onSectionSelected = { section = it },
-                dynamicColor = dynamicColor,
-                paneWidth = layout.paneWidth,
-                hingeWidth = layout.hingeWidth,
-            )
+                is ResumeLayout.TwoPane -> TwoPaneLayout(
+                    resume = resume,
+                    stats = stats,
+                    section = section,
+                    onSectionSelected = { section = it },
+                    dynamicColor = dynamicColor,
+                    paneWidth = layout.paneWidth,
+                    hingeWidth = layout.hingeWidth,
+                )
 
-            is ResumeLayout.Tabletop -> TabletopLayout(
-                resume = resume,
-                stats = stats,
-                section = section,
-                onSectionSelected = { section = it },
-                dynamicColor = dynamicColor,
-                topHeight = layout.topHeight,
-                hingeHeight = layout.hingeHeight,
-            )
+                is ResumeLayout.Tabletop -> TabletopLayout(
+                    resume = resume,
+                    stats = stats,
+                    section = section,
+                    onSectionSelected = { section = it },
+                    dynamicColor = dynamicColor,
+                    topHeight = layout.topHeight,
+                    hingeHeight = layout.hingeHeight,
+                )
+            }
         }
     }
 }

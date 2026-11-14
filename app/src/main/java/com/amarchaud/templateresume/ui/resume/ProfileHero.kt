@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.amarchaud.templateresume.R
 import com.amarchaud.templateresume.data.InfoModel
 import com.amarchaud.templateresume.data.StatModel
@@ -177,6 +179,9 @@ private fun HeroTopRow(info: InfoModel, dynamicColor: DynamicColorAction?, modif
 /** Minimum width of a stat tile; below it, the stats are stacked in a single card. */
 private val MinStatTileWidth = 104.dp
 
+/** Narrow phones keep the tiles, a bit tighter, rather than a much taller list. */
+private val MinCompactStatTileWidth = 84.dp
+
 /**
  * Key figures as three tiles, or as a stacked list when the available width is too narrow
  * (profile pane of an unfolded foldable, large font scales…).
@@ -186,10 +191,10 @@ fun StatsRow(stats: List<StatModel>, modifier: Modifier = Modifier) {
     val visibleStats = stats.take(3)
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val tileWidth = (maxWidth - StatSpacing * (visibleStats.size - 1)) / visibleStats.size
-        if (tileWidth >= MinStatTileWidth) {
-            StatTiles(visibleStats)
-        } else {
-            StatList(visibleStats)
+        when {
+            tileWidth >= MinStatTileWidth -> StatTiles(visibleStats, compact = false)
+            tileWidth >= MinCompactStatTileWidth -> StatTiles(visibleStats, compact = true)
+            else -> StatList(visibleStats)
         }
     }
 }
@@ -198,7 +203,7 @@ private val StatSpacing = 10.dp
 private val StatShape = RoundedCornerShape(18.dp)
 
 @Composable
-private fun StatTiles(stats: List<StatModel>) {
+private fun StatTiles(stats: List<StatModel>, compact: Boolean) {
     val colors = ResumeTheme.colors
     Row(
         modifier = Modifier
@@ -214,18 +219,18 @@ private fun StatTiles(stats: List<StatModel>) {
                     .clip(StatShape)
                     .background(colors.heroSurface)
                     .border(1.dp, colors.heroOutline, StatShape)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(horizontal = if (compact) 10.dp else 14.dp, vertical = if (compact) 10.dp else 12.dp),
             ) {
                 Text(
                     text = stat.value,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
                     color = colors.onHero,
                     maxLines = 1,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stat.label,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
                     color = colors.onHeroMuted,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -288,12 +293,24 @@ private fun HeroIdentity(
         ProfileAvatar(name = info.name, size = avatarSize)
         Spacer(modifier = Modifier.width(18.dp))
         Column {
-            Text(text = info.name, style = nameStyle, color = colors.onHero)
+            // One line each, shrinking only when needed: on narrow screens (e.g. the LinkedIn in-app browser),
+            // wrapped lines would make the expanded header take most of the screen. No ellipsis: auto-size only
+            // sees an overflow when the text is clipped.
+            Text(
+                text = info.name,
+                style = nameStyle,
+                color = colors.onHero,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 20.sp, maxFontSize = nameStyle.fontSize),
+            )
             Spacer(modifier = Modifier.height(2.dp))
+            val jobStyle = MaterialTheme.typography.bodyLarge
             Text(
                 text = info.job,
-                style = MaterialTheme.typography.bodyLarge,
+                style = jobStyle,
                 color = colors.onHeroMuted,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 13.sp, maxFontSize = jobStyle.fontSize, stepSize = 0.5.sp),
             )
         }
     }

@@ -85,6 +85,7 @@ internal fun ResumeScreen(
     modifier: Modifier = Modifier,
     initialSection: ResumeSection = ResumeSection.About,
 ) {
+    val actions = HeaderActions(dynamicColor = dynamicColor, resumePdfUrl = resume.contact.resumePdfUrl)
     var section by rememberSaveable { mutableStateOf(initialSection) }
     val stats = headerStats(resume)
 
@@ -107,7 +108,7 @@ internal fun ResumeScreen(
                     stats = stats,
                     section = section,
                     onSectionSelected = { section = it },
-                    dynamicColor = dynamicColor,
+                    actions = actions,
                     useRail = layout == ResumeLayout.Medium,
                 )
 
@@ -116,7 +117,7 @@ internal fun ResumeScreen(
                     stats = stats,
                     section = section,
                     onSectionSelected = { section = it },
-                    dynamicColor = dynamicColor,
+                    actions = actions,
                     paneWidth = layout.paneWidth,
                     hingeWidth = layout.hingeWidth,
                 )
@@ -126,7 +127,7 @@ internal fun ResumeScreen(
                     stats = stats,
                     section = section,
                     onSectionSelected = { section = it },
-                    dynamicColor = dynamicColor,
+                    actions = actions,
                     topHeight = layout.topHeight,
                     hingeHeight = layout.hingeHeight,
                 )
@@ -142,7 +143,7 @@ private fun CollapsingLayout(
     stats: List<StatModel>,
     section: ResumeSection,
     onSectionSelected: (ResumeSection) -> Unit,
-    dynamicColor: DynamicColorAction?,
+    actions: HeaderActions,
     useRail: Boolean,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -158,7 +159,7 @@ private fun CollapsingLayout(
                 info = resume.info,
                 stats = stats,
                 scrollBehavior = scrollBehavior,
-                dynamicColor = dynamicColor,
+                actions = actions,
                 horizontalPadding = if (useRail) 32.dp else 24.dp,
             )
             if (useRail) {
@@ -216,7 +217,7 @@ private fun TwoPaneLayout(
     stats: List<StatModel>,
     section: ResumeSection,
     onSectionSelected: (ResumeSection) -> Unit,
-    dynamicColor: DynamicColorAction?,
+    actions: HeaderActions,
     paneWidth: Dp?,
     hingeWidth: Dp,
 ) {
@@ -237,7 +238,7 @@ private fun TwoPaneLayout(
                 stats = stats,
                 selected = section,
                 onSelect = onSectionSelected,
-                dynamicColor = dynamicColor,
+                actions = actions,
                 modifier = Modifier
                     .width(width)
                     .fillMaxHeight(),
@@ -264,7 +265,7 @@ private fun TabletopLayout(
     stats: List<StatModel>,
     section: ResumeSection,
     onSectionSelected: (ResumeSection) -> Unit,
-    dynamicColor: DynamicColorAction?,
+    actions: HeaderActions,
     topHeight: Dp,
     hingeHeight: Dp,
 ) {
@@ -273,7 +274,7 @@ private fun TabletopLayout(
         TabletopHero(
             info = resume.info,
             stats = stats,
-            dynamicColor = dynamicColor,
+            actions = actions,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(topHeight),

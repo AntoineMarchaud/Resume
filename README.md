@@ -52,6 +52,7 @@
 - **Material You**: optional wallpaper-based colors on Android 12+, toggled from the header.
 - **Motion**: collapsing header, staggered entrance animations, expandable cards, animated charts, section transitions.
 - **Edge to edge**: fully transparent status and navigation bars, with icons that stay readable.
+- **Resume as PDF**, downloadable from the header and the contact screen when `resumePdfUrl` is set.
 - **Selectable text**, to copy a client, a keyword or the email address into an email or an applicant tracking system.
 - **Accessibility**: tabs, headings and toggle semantics, content descriptions, layouts that adapt to large font scales.
 - **Compose previews** for every section and for every adaptive mode (phone, tablet, foldable postures, light and dark).
@@ -65,6 +66,7 @@ Everything displayed comes from [`app/src/main/res/raw/resume_template.json`](ap
   "info": {
     "name": "Jane Doe",
     "job": "Senior Android Developer",
+    "shortJob": "Android Developer",                  // optional, shown when the header is collapsed
     "location": "Paris, France",                      // optional
     "stats": [{ "value": "10", "label": "Years on Android" }] // optional, computed when empty
   },
@@ -96,6 +98,7 @@ Everything displayed comes from [`app/src/main/res/raw/resume_template.json`](ap
     "phone": "+33 6 00 00 00 00",                      // optional
     "githubUrl": "https://github.com/jane",            // optional
     "linkedInUrl": "https://www.linkedin.com/in/jane", // optional
+    "resumePdfUrl": "https://jane.github.io/Resume/cv/Jane-Doe-CV.pdf", // optional, PDF download
     "message": "Short call to action"                  // optional
   }
 }

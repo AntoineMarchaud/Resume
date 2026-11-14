@@ -65,6 +65,7 @@
     <string name="contact_title">Contact</string>
     <string name="contact_cta_title">Let\'s work together</string>
     <string name="contact_cta_default">Feel free to reach out by email or on social networks.</string>
+    <string name="download_resume">Download my resume (PDF)</string>
     <string name="contact_send_email">Send an email</string>
     <string name="contact_email">Email</string>
     <string name="contact_phone">Phone</string>

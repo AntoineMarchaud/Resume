@@ -1,5 +1,10 @@
 package com.amarchaud.templateresume.ui.resume
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,6 +37,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -47,16 +54,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.amarchaud.templateresume.R
@@ -77,6 +88,13 @@ private val HeaderBarHeight = 64.dp
 
 /** Material You toggle, `null` when dynamic colors are not available on the device. */
 class DynamicColorAction(val enabled: Boolean, val onToggle: (Boolean) -> Unit)
+
+/** Everything displayed at the top right of the hero banner. */
+class HeaderActions(
+    val dynamicColor: DynamicColorAction? = null,
+    /** The resume as a PDF. */
+    val resumePdfUrl: String? = null,
+)
 
 @Composable
 fun ProfileAvatar(name: String, size: Dp, modifier: Modifier = Modifier) {
@@ -162,9 +180,9 @@ private fun DynamicColorToggle(action: DynamicColorAction, modifier: Modifier = 
     }
 }
 
-/** Location chip on the left, Material You toggle on the right. */
+/** Location chip on the left; resume download and Material You toggle on the right. */
 @Composable
-private fun HeroTopRow(info: InfoModel, dynamicColor: DynamicColorAction?, modifier: Modifier = Modifier) {
+private fun HeroTopRow(info: InfoModel, actions: HeaderActions, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -172,7 +190,46 @@ private fun HeroTopRow(info: InfoModel, dynamicColor: DynamicColorAction?, modif
         Box(modifier = Modifier.weight(1f)) {
             info.location?.let { LocationChip(it) }
         }
-        dynamicColor?.let { DynamicColorToggle(it) }
+        HeaderActionsRow(actions)
+    }
+}
+
+@Composable
+private fun HeaderActionsRow(actions: HeaderActions, modifier: Modifier = Modifier, showResumePdf: Boolean = true) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AnimatedVisibility(
+            visible = showResumePdf && actions.resumePdfUrl != null,
+            enter = fadeIn() + expandHorizontally(),
+            exit = fadeOut() + shrinkHorizontally(),
+        ) {
+            actions.resumePdfUrl?.let { ResumePdfButton(it) }
+        }
+        actions.dynamicColor?.let { DynamicColorToggle(it) }
+    }
+}
+
+/** Opens the resume PDF: from the first screen, recruiters can forward it to their clients. */
+@Composable
+private fun ResumePdfButton(url: String, modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val colors = ResumeTheme.colors
+    IconButton(
+        onClick = { runCatching { uriHandler.openUri(url) } },
+        modifier = modifier,
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = colors.heroSurface,
+            contentColor = colors.onHero,
+        ),
+    ) {
+        Icon(
+            imageVector = AppIcons.Download,
+            contentDescription = stringResource(R.string.download_resume),
+            modifier = Modifier.size(20.dp),
+        )
     }
 }
 
@@ -281,6 +338,40 @@ private fun StatList(stats: List<StatModel>) {
 }
 
 /** Avatar, name and job title. */
+/**
+ * One line, shrinking down to [minFontSize] when needed; when even that does not fit, two lines rather than a
+ * truncated text. On narrow screens (e.g. the LinkedIn in-app browser), wrapped lines at full size would make the
+ * expanded header take most of the screen.
+ */
+@Composable
+private fun FittingText(text: String, style: TextStyle, minFontSize: TextUnit, color: Color) {
+    BoxWithConstraints {
+        val textMeasurer = rememberTextMeasurer()
+        val minStyle = style.copy(fontSize = minFontSize)
+        val fitsOnOneLine = remember(text, minStyle, constraints.maxWidth) {
+            textMeasurer.measure(text, minStyle, softWrap = false, maxLines = 1).size.width <= constraints.maxWidth
+        }
+        if (fitsOnOneLine) {
+            // No ellipsis: auto-size only sees an overflow when the text is clipped.
+            Text(
+                text = text,
+                style = style,
+                color = color,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = minFontSize, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+            )
+        } else {
+            Text(
+                text = text,
+                style = minStyle.copy(lineHeight = minFontSize * 1.35f),
+                color = color,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
 @Composable
 private fun HeroIdentity(
     info: InfoModel,
@@ -293,25 +384,9 @@ private fun HeroIdentity(
         ProfileAvatar(name = info.name, size = avatarSize)
         Spacer(modifier = Modifier.width(18.dp))
         Column {
-            // One line each, shrinking only when needed: on narrow screens (e.g. the LinkedIn in-app browser),
-            // wrapped lines would make the expanded header take most of the screen. No ellipsis: auto-size only
-            // sees an overflow when the text is clipped.
-            Text(
-                text = info.name,
-                style = nameStyle,
-                color = colors.onHero,
-                maxLines = 1,
-                autoSize = TextAutoSize.StepBased(minFontSize = 20.sp, maxFontSize = nameStyle.fontSize),
-            )
+            FittingText(text = info.name, style = nameStyle, minFontSize = 20.sp, color = colors.onHero)
             Spacer(modifier = Modifier.height(2.dp))
-            val jobStyle = MaterialTheme.typography.bodyLarge
-            Text(
-                text = info.job,
-                style = jobStyle,
-                color = colors.onHeroMuted,
-                maxLines = 1,
-                autoSize = TextAutoSize.StepBased(minFontSize = 13.sp, maxFontSize = jobStyle.fontSize, stepSize = 0.5.sp),
-            )
+            FittingText(text = info.job, style = MaterialTheme.typography.bodyLarge, minFontSize = 13.sp, color = colors.onHeroMuted)
         }
     }
 }
@@ -326,12 +401,14 @@ fun CollapsingProfileHeader(
     info: InfoModel,
     stats: List<StatModel>,
     scrollBehavior: TopAppBarScrollBehavior,
-    dynamicColor: DynamicColorAction?,
+    actions: HeaderActions,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 24.dp,
 ) {
     val colors = ResumeTheme.colors
     val state = scrollBehavior.state
+    // Once collapsed, the resume download (also on the contact screen) leaves its room to the name.
+    val showResumePdf by remember(state) { derivedStateOf { state.collapsedFraction < 0.5f } }
     val density = LocalDensity.current
     val barHeightPx = with(density) { HeaderBarHeight.roundToPx() }
     // Natural height of the expanded part, measured below; the estimate avoids a jump on first frame.
@@ -419,7 +496,7 @@ fun CollapsingProfileHeader(
                             maxLines = 1,
                         )
                         Text(
-                            text = info.job,
+                            text = info.shortJob ?: info.job,
                             style = MaterialTheme.typography.labelMedium,
                             color = colors.onHeroMuted,
                             maxLines = 1,
@@ -428,7 +505,7 @@ fun CollapsingProfileHeader(
                     }
                 }
             }
-            dynamicColor?.let { DynamicColorToggle(it) }
+            HeaderActionsRow(actions, showResumePdf = showResumePdf)
         }
     }
 }
@@ -444,7 +521,7 @@ fun ProfilePane(
     stats: List<StatModel>,
     selected: ResumeSection,
     onSelect: (ResumeSection) -> Unit,
-    dynamicColor: DynamicColorAction?,
+    actions: HeaderActions,
     modifier: Modifier = Modifier,
 ) {
     val colors = ResumeTheme.colors
@@ -461,7 +538,7 @@ fun ProfilePane(
                     .heroBackground(colors)
                     .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 24.dp),
             ) {
-                HeroTopRow(info = info, dynamicColor = dynamicColor)
+                HeroTopRow(info = info, actions = actions)
                 Spacer(modifier = Modifier.height(28.dp))
                 ProfileAvatar(name = info.name, size = 96.dp)
                 Spacer(modifier = Modifier.height(20.dp))
@@ -483,7 +560,7 @@ fun ProfilePane(
 fun TabletopHero(
     info: InfoModel,
     stats: List<StatModel>,
-    dynamicColor: DynamicColorAction?,
+    actions: HeaderActions,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -494,7 +571,7 @@ fun TabletopHero(
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
             .padding(horizontal = 32.dp, vertical = 16.dp),
     ) {
-        HeroTopRow(info = info, dynamicColor = dynamicColor, modifier = Modifier.align(Alignment.TopCenter))
+        HeroTopRow(info = info, actions = actions, modifier = Modifier.align(Alignment.TopCenter))
         Column(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
